@@ -8,6 +8,8 @@ import ListCommunityPosts from '../components/ListCommunityPosts.jsx';
 import NewsFeed from '../components/NewsFeed.jsx';
 import { useMutation, gql } from '@apollo/client';
 import './CommunityPage.css';
+import CreateBusinessProfile from '../components/CreateBusinessProfile.jsx';
+import CreateDeal from '../components/CreateDeal.jsx';
 
 const LOGOUT_MUTATION = gql`
   mutation Logout {
@@ -45,6 +47,9 @@ const CommunityPage = ({ role, userId }) => {
       { name: 'News Feed', component: <NewsFeed userId={userId} /> },
       { name: 'Help Requests', component: <HelpRequestList userId={userId} role={role} /> },
       { name: 'Community Posts', component: <ListCommunityPosts userId={userId} /> },
+      {name: 'Create a Business Profile', component: <CreateBusinessProfile userId={userId}/>},
+      {name: 'Create Deal', component: <CreateDeal userId={userId} /> }
+
     ],
     community_organizer: [
       { name: 'Create Post', component: <CreateCommunityPost userId={userId} /> },
