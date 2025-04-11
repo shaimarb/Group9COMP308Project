@@ -6,6 +6,7 @@ Go to community-service > npm install
 Then, run these on the server folder to install all deps and start all services at once:
 
 npm install
+
 npm run start:all
 
 
