@@ -1,0 +1,158 @@
+/* Global Styles */
+body {
+    font-family: Arial, sans-serif; /* Sets the font to Arial for a clean, modern look */
+    margin: 0; /* Removes default margin */
+    padding: 0; /* Removes default padding */
+}
+
+h4 {
+    font-weight: bold; /* Makes the h4 text bold */
+    margin-bottom: 20px; /* Adds space below h4 for better separation */
+}
+
+/* Navbar Styles */
+.navbar {
+    background-color: #9c27b0; /* Sets a light green background for the navbar */
+    padding: 2rem 2rem; /* Adds padding to the navbar for spacing */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow under the navbar for depth */
+}
+
+.navbar-brand {
+    font-size: 1.8rem; /* Increases font size of the brand text */
+    font-weight: bold; /* Makes the brand text bold */
+    color: #fff; /* Sets the brand text color to white */
+    text-decoration: none; /* Removes the default underline from the brand text */
+    
+}
+
+.navbar-brand:hover {
+    color: #f8f9fa; /* Changes the brand text color to a slightly off-white on hover */
+}
+
+.navbar-nav {
+    display: flex; /* Displays the navigation items in a horizontal row */
+    justify-content: flex-start; /* Aligns the items to the left */
+    align-items: center; /* Centers the items vertically within the navbar */
+    gap: 20px; /* Adds space between each nav item */
+}
+
+.nav-link {
+    font-size: 1.2rem; /* Sets a slightly larger font size for nav links */
+    color: #fff; /* Sets the nav link color to white */
+    text-decoration: none; /* Removes the underline from nav links */
+    font-weight: 500; /* Sets medium weight for the nav links */
+}
+
+.nav-link:hover {
+    color: #f8f9fa; /* Changes the color of nav links to slightly off-white on hover */
+    font-weight: bold; /* Makes the nav link bold when hovered */
+}
+
+.navbar-toggler {
+    border-color: #fff; /* Sets the border color of the hamburger icon to white */
+}
+
+button {
+    margin-left: 10px; /* Adds space to the left of the button */
+    background-color: #9c27b0; /* Sets the button background to match the navbar */
+    color: #fff; /* Sets the text color to white */
+    border: none; /* Removes the default border */
+    padding: 10px 20px; /* Adds padding for better size */
+    border-radius: 5px; /* Rounds the button corners */
+    font-size: 1rem; /* Sets a readable font size */
+    cursor: pointer; /* Changes the cursor to pointer on hover */
+    transition: background-color 0.3s ease; /* Smooth hover transition */
+}
+
+button:hover {
+    background-color: #9c27b0; /* Slightly darker green on hover */
+}
+
+/* Main Content Styles */
+.container {
+    max-width: 900px; /* Max width (adjust as needed) */
+    width: 100%; /* Allow width to be flexible based on screen size */
+    margin: 0 auto; /* Center horizontally */
+    padding: 30px 20px; /* Inner padding */
+}
+
+.row {
+    margin-top: 40px; /* Adds space above rows for better separation */
+}
+
+.col {
+    padding-left: 0; /* Removes left padding from columns */
+    padding-right: 0; /* Removes right padding from columns */
+}
+
+/* Section Styles */
+.section-content {
+    padding: 20px; /* Adds padding inside the section for spacing */
+    border: 1px solid #e0e0e0; /* Adds a light border around the section */
+    border-radius: 8px; /* Rounds the corners of the section */
+    background-color: #fafafa; /* Sets a light gray background for the section */
+    margin-bottom: 20px; /* Adds space below each section */
+}
+
+/* Responsive Styles */
+
+/* For devices with width up to 992px (Tablets) */
+@media (max-width: 992px) {
+    .navbar-nav {
+        justify-content: center; /* Centers the navbar links on smaller screens */
+        gap: 15px; /* Reduces the space between the navbar items */
+    }
+
+    .navbar {
+        padding: 2rem; /* Reduces padding in the navbar for smaller screens */
+    }
+
+    .navbar-brand {
+        font-size: 1.5rem; /* Reduces the font size of the brand on smaller screens */
+    }
+
+    .nav-link {
+        font-size: 1rem; /* Reduces the font size of nav links on smaller screens */
+    }
+
+    .container {
+        padding: 20px 10px; /* Reduces padding in the container for smaller screens */
+    }
+
+    .section-content {
+        padding: 15px; /* Reduces padding inside section content */
+    }
+}
+
+/* For devices with width up to 576px (Mobile) */
+@media (max-width: 576px) {
+    .navbar {
+        padding: 1rem 0.5rem; /* Further reduces padding in the navbar */
+    }
+
+    .navbar-brand {
+        font-size: 1.2rem; /* Reduces the font size of the brand for very small screens */
+    }
+
+    .nav-link {
+        font-size: 0.9rem; /* Further reduces the font size of nav links */
+    }
+
+    .container {
+        padding: 10px; /* Reduces padding in the container for smaller screens */
+    }
+
+    .section-content {
+        padding: 10px; /* Further reduces padding inside section content */
+    }
+
+    .navbar-nav {
+        flex-direction: column; /* Stacks the navbar items vertically on small screens */
+        gap: 10px; /* Adds space between the navbar items in the column layout */
+    }
+}
+
+.green-dot {
+    color: #9c27b0;
+  }
+  
