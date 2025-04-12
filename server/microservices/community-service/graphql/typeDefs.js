@@ -10,8 +10,6 @@ const typeDefs = `#graphql
     role: String! @external
   }
 
-
-
 type CommunityPost {
   id: ID!
   author: User! @external
@@ -32,10 +30,51 @@ type HelpRequest {
   createdAt: String!
 }
 
+type EmergencyAlert {
+  id: ID!
+  type: String!
+  description: String!
+  location: String!
+  reportedAt: String!
+  reporterId: ID!
+}
+
 type AIResponse {
     text: String!
     suggestedQuestions: [String]!
     retrievedPosts: [CommunityPost]!
+}
+
+# BUSINESS_OWNER TYPES
+
+type BusinessProfile {
+  id: ID!
+  name: String!
+  description: String
+  category: String
+  address: String
+  author: User! @external
+  createdAt: String!
+  deals: [Deal!]!
+  reviews: [Review!]!
+}
+
+type Deal {
+  id: ID!
+  title: String!
+  description: String
+  validUntil: String
+  createdAt: String!
+}
+
+type Review {
+  id: ID!
+  author: User! @external
+  rating: Int!
+  comment: String
+  sentiment: String
+  response: String
+  createdAt: String!
 }
 
 
@@ -45,10 +84,21 @@ type Query {
   getHelpRequests: [HelpRequest!]!
   communityAIQuery(input: String!, userId: ID!): AIResponse!
   getDiscussionById(postId: ID!) : CommunityPost
+
+  getEmergencyAlerts: [EmergencyAlert!]!
+
+# BUSINESS QUERIES
+
+  getAllBusinessProfiles: [BusinessProfile!]!
+  getReviewsByBusiness(businessId: ID!): [Review!]!
+  getDealsByBusiness(businessId: ID!): [Deal!]!
+  getBusinessProfilesByAuthor(authorId: ID!): [BusinessProfile!]! # Added query for business owner
+  getBusinessProfile(id: ID!): BusinessProfile
+
 }
 
 # Mutations
-# removed     aiSummary: String from createCommunityPost
+# removed field    aiSummary: String from createCommunityPost
 
 type Mutation {
   createCommunityPost(
@@ -69,7 +119,6 @@ type Mutation {
   
   addVolunteerToHelpRequest(id: ID!, volunteerId: ID!): Boolean
 
-  # New Mutations:
   updateCommunityPost(
     id: ID!,
     title: String,
@@ -90,7 +139,52 @@ type Mutation {
   deleteHelpRequest(id: ID!): Boolean
 
   logout: Boolean
+
+  createEmergencyAlert(input: EmergencyAlertInput!): EmergencyAlert!
+  deleteEmergencyAlert(id: ID!): Boolean
+
+  # BUSINESS MUTATIONS:
+
+  createBusinessProfile(
+  name: String!,
+  description: String,
+  category: String,
+  address: String
+  author: ID!  
+): BusinessProfile!
+
+
+  createDeal(
+    businessId: ID!,
+    title: String!,
+    description: String,
+    validUntil: String
+  ): Deal!
+
+  removeDeal(dealId: ID!): Boolean!
+
+  createReview(
+    businessId: ID!,
+    author: ID!,
+    rating: Int!,
+    comment: String,
+    sentiment: String
+  ): Review!
+
+  addResponseToReview(
+    reviewId: ID!,
+    response: String!
+    author: ID! 
+  ): Review!
 }
+
+input EmergencyAlertInput {
+  type: String!
+  description: String!
+  location: String!
+  reporterId: ID!
+}
+
 `
 
 export default typeDefs;

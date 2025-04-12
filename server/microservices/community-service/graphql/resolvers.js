@@ -1,17 +1,21 @@
 import CommunityPost from '../models/CommunityPost.js';
 import HelpRequest from '../models/HelpRequest.js';
+import EmergencyAlert from '../models/EmergencyAlert.js';
 import User from '../models/User.js'; 
 import { getSummary } from './geminiResolver.js';
 import { aiAgentLogic } from './geminiResolver.js';
+import businessResolver from './businessResolver.js'; // Import business resolver
 
 // Helper function to check if the user role is allowed
 const checkUserRole = async (userId, allowedRoles) => {
   try {
     // Fetch user from the database
     const user = await User.findById(userId);
+    console.log(userId)
     console.log(user.role)
     if (!user) {
-      throw new Error('User not found');
+      // throw new Error('User not found');
+      return false;
     }
 
     // Check if the user's role is included in allowedRoles
@@ -24,6 +28,8 @@ const checkUserRole = async (userId, allowedRoles) => {
 
 const resolvers = {
   Query: {
+    ...businessResolver.Query, // Spread business resolver's Query
+
     getCommunityPosts: async () => {
       return await CommunityPost.find().populate('author').sort({ createdAt: -1 });
     },
@@ -54,19 +60,19 @@ const resolvers = {
         throw new Error("Failed to process AI query.");
       }
     },
+    getEmergencyAlerts: async () => {
+      return await EmergencyAlert.find().sort({ reportedAt: -1 });
+    },
   },
 
   Mutation: {
-    // createCommunityPost: async (_, { author, title, content, category }) => {
-    //   const hasPermission = await checkUserRole(author, ['resident', 'community_organizer']);
-    //   if (!hasPermission) throw new Error('Insufficient permissions');
-
-    //   const newPost = new CommunityPost({ author, title, content, category, aiSummary });
-    //   return await newPost.save();
-    // },
+    ...businessResolver.Mutation, // Spread business resolver's Mutation
 
     createCommunityPost: async (_, { author, title, content, category }) => {
       const hasPermission = await checkUserRole(author, ['resident', 'community_organizer']);
+      console.log(`Checking role for user ${author}`);
+      console.log(`Permission granted? ${hasPermission}`);
+
       if (!hasPermission) throw new Error('Insufficient permissions - refresh page and try again');
       console.log(content.length)
       let aiSummary = await getSummary(content);
@@ -90,7 +96,6 @@ const resolvers = {
     },
 
     markHelpRequestResolved: async (_, { id }) => {
-      console.log(id)
       const helpRequest = await HelpRequest.findById(id);
       console.log(helpRequest?.isResolved)
       if (!helpRequest) throw new Error('Help request not found!');
@@ -200,12 +205,38 @@ const resolvers = {
       await helpRequest.deleteOne();
       return true;
     },
-    //simple logout
+
+    createEmergencyAlert: async (_, { input }) => {
+      const hasPermission = await checkUserRole(input.reporterId, ['resident', 'community_organizer']);
+      if (!hasPermission) throw new Error('Insufficient permissions');
+
+      const alert = new EmergencyAlert({
+        ...input,
+        reportedAt: new Date(),
+      });
+
+      return await alert.save();
+    },
+
+    // deleteEmergencyAlert: async (_, { id }) => {
+    //   const alert = await EmergencyAlert.findById(id);
+    //   if (!alert) throw new Error('Alert not found');
+
+    //   if (alert.reporterId !== userId) {
+    //     return false; // User is not authorized
+    // }
+  
+    //   await alert.deleteOne();
+    //   return true;
+    // },
+    
     logout: (_, __, { res }) => {
       res.clearCookie("token", { httpOnly: true, secure: true, sameSite: "Strict" });
       return true;
   },
   },
+  BusinessProfile: businessResolver.BusinessProfile,
+  Review: businessResolver.Review,
 };
 
 export default resolvers;

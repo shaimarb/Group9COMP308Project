@@ -3,8 +3,8 @@ import { gql, useQuery, useMutation } from '@apollo/client';
 import { Checkbox, List, ListItem, ListItemText, ListItemAvatar, Avatar, Paper, Typography, CircularProgress, IconButton, TextField, Icon } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import EventSeatIcon from '@mui/icons-material/EventSeat';
-// GraphQL query to fetch help requests
+// import EventSeatIcon from '@mui/icons-material/EventSeat';
+import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
 // GraphQL query to fetch help requests
 const GET_HELP_REQUESTS = gql`
   query GetHelpRequests {
@@ -244,8 +244,7 @@ const HelpRequestList = ({ userId, role }) => {
                 />
                 {isOrganizer && !request?.volunteers?.some(volunteer => volunteer.id === userId) &&
 
-
-                  <EventSeatIcon onClick={() => handleVolunteer(request.id)} />
+<VolunteerActivismIcon onClick={() => handleVolunteer(request.id)} />
                 }
                 {userId === request.author.id && (
                   <>

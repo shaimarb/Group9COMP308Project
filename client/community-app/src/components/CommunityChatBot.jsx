@@ -59,7 +59,7 @@ const CommunityChatbot = ({ userId }) => {
             setMessages([
                 {
                     sender: "ai",
-                    text: "Hello, My name is Lucy. I help users to discuss discussions! How can I assist you today?",
+                    text: "Hello, My name is Lucy. How can I assist you today?",
                     retrievedPosts: [],
                     suggestedQuestions: [],
                 },
@@ -126,7 +126,6 @@ const CommunityChatbot = ({ userId }) => {
 >
     <ChatBubbleOutlineIcon sx={{ fontSize: 30 }} />  {/* Icon size adjustment */}
 </Button>
-
 
             <Modal
                 open={open}

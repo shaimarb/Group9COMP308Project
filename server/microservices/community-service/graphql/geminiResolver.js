@@ -117,6 +117,7 @@ export async function aiAgentLogic(userQuery, userId) {
             text: "API KEY not found/invalid. Check env file GEMINI_API_KEY=",
             suggestedQuestions: [],
             retrievedPosts: [],
+            sentiment:"Unknown"
         };
     }
 
@@ -170,11 +171,6 @@ export async function aiAgentLogic(userQuery, userId) {
         suggestedQuestions: followUpQuestions,
         retrievedPosts: relevantDocs,
     };
-    // return {
-    //     text:"test",
-    //     suggestedQuestions:[],
-    //     retrievedPosts:[]
-    // }
 }
 
 //get users past history
@@ -189,3 +185,30 @@ async function getRecentInteractions(userId) {
 
     return interactions.map(i => `User: ${i.userQuery}\nAI: ${i.aiResponse}`).join("\n\n");
 }
+
+// New function to get sentiment using Gemini API
+export async function analyzeReviewSentiment(reviewComment) {
+    if (!API_KEY) {
+        return "API Key not set up. Check server-side ENV";
+    }
+
+    try {
+        if (reviewComment != null) {
+            if (reviewComment.length < 10) {
+                return "Review comment too short to analyze sentiment";
+            }
+
+            const response = await ai.models.generateContent({
+                model: "gemini-2.0-flash",
+                contents: `Analyze the sentiment of the following review comment. Classify it as Positive, Neutral, or Negative: ${reviewComment}`
+            });
+
+            // Assuming the response returns something like "Positive", "Neutral", or "Negative"
+            return response.text.trim();
+        }
+    } catch (error) {
+        console.error("Error fetching sentiment:", error);
+        return "Failed to generate sentiment analysis.";
+    }
+}
+

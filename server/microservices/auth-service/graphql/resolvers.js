@@ -70,7 +70,8 @@ const resolvers = {
             console.log("Cookie set:", res.getHeaders()['set-cookie']);
     
             // Return the user object after successful login
-            return { username: user.username, email: user.email, role: user.role };
+            // added user id
+            return { username: user.username, email: user.email, role: user.role, id: user._id };
         },
 
 

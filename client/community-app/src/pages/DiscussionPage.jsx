@@ -1,4 +1,4 @@
-/*import { useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { gql, useQuery } from "@apollo/client";
 import { Container, Paper, Typography, Box, CircularProgress,Button,IconButton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
@@ -84,7 +84,9 @@ const DiscussionPage = () => {
     );
 };
 
-export default DiscussionPage;*/
+export default DiscussionPage;
+
+/*
 import { useParams, useNavigate } from "react-router-dom";
 import { gql, useQuery } from "@apollo/client";
 import { Container, Card, Spinner, Alert, Row, Col, Button } from "react-bootstrap";
@@ -171,4 +173,4 @@ const DiscussionPage = () => {
   );
 };
 
-export default DiscussionPage;
+export default DiscussionPage;*/
