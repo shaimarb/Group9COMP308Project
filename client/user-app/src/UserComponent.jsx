@@ -1,5 +1,5 @@
 // user-app/src/UserComponent.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useMutation, gql } from '@apollo/client';
 import { Alert, Button, Form, Container, Nav, Spinner } from 'react-bootstrap';
 import "./UserComponent.css"

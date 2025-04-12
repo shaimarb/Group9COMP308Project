@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import  { useState, useEffect, lazy, Suspense } from 'react';
 import { useQuery, gql } from '@apollo/client';
 
 // Dynamically import components

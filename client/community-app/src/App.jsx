@@ -5,6 +5,8 @@ import DiscussionPage from "./pages/DiscussionPage";
 import CommunityChatbot from "./components/CommunityChatBot";
 import CreateBusinessProfile from "./components/CreateBusinessProfile";
 import CreateDeal from "./components/CreateDeal";
+import EmergencyAlertsPage from "./pages/EmergencyAlertsPage"; // ✅ Import added
+
 // Set up Apollo Client
 const client = new ApolloClient({
   uri: "http://localhost:4002/graphql",
@@ -15,22 +17,30 @@ const client = new ApolloClient({
 function App({ role, userId }) {
   // const rolePassed = role || "community_organizer";
   // const userIdPassed = userId || "67d3c8fc6de12c1b9becc489";
-  const rolePassed = role
-  const userIdPassed = userId
+  const rolePassed = role;
+  const userIdPassed = userId;
 
   console.log("Community app", { userId, role }, { userIdType: typeof userId, roleType: typeof role });
 
   return (
     <ApolloProvider client={client}>
       <Router>
-      <CommunityChatbot userId={userIdPassed}/>
+        <CommunityChatbot userId={userIdPassed} />
         <Routes>
           {/* Home Page */}
           <Route
             path="/"
             element={<CommunityPage role={rolePassed} userId={userIdPassed} />}
           />
-          <Route path="/discussion/:id" element={<DiscussionPage/>}/>
+          
+          {/* Discussion Page */}
+          <Route path="/discussion/:id" element={<DiscussionPage />} />
+          
+          {/* ✅ Emergency Alerts Page */}
+          <Route
+            path="/emergency-alerts"
+            element={<EmergencyAlertsPage role={rolePassed} userId={userIdPassed} />}
+          />
 
           {/* 404 Page Not Found */}
           <Route path="*" element={<h2>Page Not Found</h2>} />

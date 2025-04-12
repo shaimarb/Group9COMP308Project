@@ -1,18 +1,14 @@
-//typeDefs from Community
-//removed   updatedAt: String! from CommunityPost and HelpRequest
-
 const typeDefs = `#graphql
-  #graphql
-  type User @key(fields: "id") {
-    id: ID! @external
-    username: String! @external
-    email: String! @external
-    role: String! @external
-  }
+extend type User @key(fields: "id") {
+  id: ID! @external
+  username: String @external
+  email: String @external
+  role: String @external
+}
 
 type CommunityPost {
   id: ID!
-  author: User! @external
+  author: User!
   title: String!
   content: String!
   category: String!
@@ -22,25 +18,34 @@ type CommunityPost {
 
 type HelpRequest {
   id: ID!
-  author: User! @external
+  author: User!
   description: String!
   location: String
   isResolved: Boolean!
-  volunteers: [User!]! @external
+  volunteers: [User!]!
   createdAt: String!
 }
 
+type EmergencyAlert {
+  id: ID!
+  type: String!
+  description: String!
+  location: String!
+  reportedAt: String!
+  reporterId: ID!
+}
+
 type AIResponse {
-    text: String!
-    suggestedQuestions: [String]!
-    retrievedPosts: [CommunityPost]!
+  text: String!
+  suggestedQuestions: [String]!
+  retrievedPosts: [CommunityPost]!
 }
 
 # BUSINESS_OWNER TYPES
 
 type BusinessProfile {
   id: ID!
-  owner: User! @external
+  owner: User!
   name: String!
   description: String
   category: String
@@ -66,7 +71,7 @@ type Deal {
 type Review {
   id: ID!
   business: BusinessProfile!
-  author: User! @external
+  author: User!
   rating: Int!
   comment: String
   sentiment: String
@@ -79,18 +84,16 @@ type Query {
   getCommunityPosts: [CommunityPost!]!
   getHelpRequests: [HelpRequest!]!
   communityAIQuery(input: String!, userId: ID!): AIResponse!
-  getDiscussionById(postId: ID!) : CommunityPost
+  getDiscussionById(postId: ID!): CommunityPost
 
-# BUSINESS QUERIES
+  getEmergencyAlerts: [EmergencyAlert!]!
+  getMatchedVolunteers(helpRequestId: ID!): [User!]!
 
   getAllBusinesses: [BusinessProfile!]!
   getBusinessById(id: ID!): BusinessProfile
   getDealsByBusiness(businessId: ID!): [Deal!]!
   getReviewsByBusiness(businessId: ID!): [Review!]!
 }
-
-# Mutations
-# removed field    aiSummary: String from createCommunityPost
 
 type Mutation {
   createCommunityPost(
@@ -103,12 +106,11 @@ type Mutation {
   createHelpRequest(
     author: ID!,
     description: String!,
-    aiSummary:String,
+    aiSummary: String,
     location: String
   ): Boolean
 
   markHelpRequestResolved(id: ID!): Boolean
-  
   addVolunteerToHelpRequest(id: ID!, volunteerId: ID!): Boolean
 
   updateCommunityPost(
@@ -130,9 +132,9 @@ type Mutation {
 
   deleteHelpRequest(id: ID!): Boolean
 
-  logout: Boolean
+  createEmergencyAlert(input: EmergencyAlertInput!): EmergencyAlert!
 
-  # BUSINESS MUTATIONS:
+  logout: Boolean
 
   createBusinessProfile(
     ownerId: ID!,
@@ -168,8 +170,12 @@ input ContactInfoInput {
   address: String
 }
 
-
-
-`
+input EmergencyAlertInput {
+  type: String!
+  description: String!
+  location: String!
+  reporterId: ID!
+}
+`;
 
 export default typeDefs;

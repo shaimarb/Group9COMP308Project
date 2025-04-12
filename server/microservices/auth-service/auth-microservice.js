@@ -13,6 +13,7 @@ import bodyParser from 'body-parser';
 import jwt from 'jsonwebtoken';
 import connectDB from './config/mongoose.js';
 import typeDefs from './graphql/typeDefs.js';
+console.log("✅ Using typeDefs with register(location, interests)");
 import resolvers from './graphql/resolvers.js';
 //
 console.log("🔍 JWT_SECRET in service:", process.env.JWT_SECRET);

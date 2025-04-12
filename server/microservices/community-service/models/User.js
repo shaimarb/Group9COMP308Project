@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema({
         enum: ['resident', 'business_owner', 'community_organizer'], 
         default: 'resident' 
     },
+
 }, { timestamps: true }); // Auto-handles createdAt & updatedAt
 
 // Pre-save hook to hash password before saving
