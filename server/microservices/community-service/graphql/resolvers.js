@@ -1,5 +1,6 @@
 import CommunityPost from '../models/CommunityPost.js';
 import HelpRequest from '../models/HelpRequest.js';
+import EmergencyAlert from '../models/EmergencyAlert.js';
 import User from '../models/User.js'; 
 import { getSummary } from './geminiResolver.js';
 import { aiAgentLogic } from './geminiResolver.js';
@@ -59,21 +60,19 @@ const resolvers = {
         throw new Error("Failed to process AI query.");
       }
     },
+    getEmergencyAlerts: async () => {
+      return await EmergencyAlert.find().sort({ reportedAt: -1 });
+    },
   },
 
   Mutation: {
     ...businessResolver.Mutation, // Spread business resolver's Mutation
 
-    // createCommunityPost: async (_, { author, title, content, category }) => {
-    //   const hasPermission = await checkUserRole(author, ['resident', 'community_organizer']);
-    //   if (!hasPermission) throw new Error('Insufficient permissions');
-
-    //   const newPost = new CommunityPost({ author, title, content, category, aiSummary });
-    //   return await newPost.save();
-    // },
-
     createCommunityPost: async (_, { author, title, content, category }) => {
       const hasPermission = await checkUserRole(author, ['resident', 'community_organizer']);
+      console.log(`Checking role for user ${author}`);
+      console.log(`Permission granted? ${hasPermission}`);
+
       if (!hasPermission) throw new Error('Insufficient permissions - refresh page and try again');
       console.log(content.length)
       let aiSummary = await getSummary(content);
@@ -206,7 +205,31 @@ const resolvers = {
       await helpRequest.deleteOne();
       return true;
     },
-    //simple logout
+
+    createEmergencyAlert: async (_, { input }) => {
+      const hasPermission = await checkUserRole(input.reporterId, ['resident', 'community_organizer']);
+      if (!hasPermission) throw new Error('Insufficient permissions');
+
+      const alert = new EmergencyAlert({
+        ...input,
+        reportedAt: new Date(),
+      });
+
+      return await alert.save();
+    },
+
+    // deleteEmergencyAlert: async (_, { id }) => {
+    //   const alert = await EmergencyAlert.findById(id);
+    //   if (!alert) throw new Error('Alert not found');
+
+    //   if (alert.reporterId !== userId) {
+    //     return false; // User is not authorized
+    // }
+  
+    //   await alert.deleteOne();
+    //   return true;
+    // },
+    
     logout: (_, __, { res }) => {
       res.clearCookie("token", { httpOnly: true, secure: true, sameSite: "Strict" });
       return true;

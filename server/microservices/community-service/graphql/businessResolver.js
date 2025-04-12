@@ -1,135 +1,157 @@
 import BusinessProfile from '../models/BusinessProfile.js';
 import Deal from '../models/Deal.js';
 import Review from '../models/Review.js';
-import { analyzeReviewSentiment } from './geminiResolver.js'; // Import the sentiment analysis function
+import User from '../models/User.js';
+import { analyzeReviewSentiment } from './geminiResolver.js';
 
-const createReview = async (_, { businessId, authorId, rating, comment }) => {
+// Helper function to check if the user role is allowed
+const checkUserRole = async (userId, allowedRoles) => {
     try {
-        // First, perform sentiment analysis on the comment
-        const sentiment = await analyzeReviewSentiment(comment).catch(() => {
-            // Fallback to rating-based sentiment analysis if sentiment API fails
-            return getSentimentFromRating(rating);
-        });
-
-        // Create the new review in the database (Mongoose example)
-        const newReview = new Review({
-            businessId,
-            authorId,
-            rating,
-            comment,
-            sentiment,  // Store the sentiment in the review
-            createdAt: new Date(),
-        });
-
-        // Save the review
-        await newReview.save();
-
-        return newReview;
+        const user = await User.findById(userId);
+        if (!user) {
+            return false;
+        }
+        return allowedRoles.includes(user.role);
     } catch (error) {
-        console.error("Error creating review:", error);
-        throw new Error("Failed to create review.");
+        console.error('Error in checkUserRole:', error);
+        return false;
     }
 };
 
-export const businessResolver = {
-  Query: {
-    getAllBusinesses: async () => {
-      return await BusinessProfile.find();
+const businessResolver = {
+    Query: {
+        getAllBusinessProfiles: async () => {
+            return await BusinessProfile.find().populate('author');
+        },
+        getDealsByBusiness: async (_, { businessId }) => {
+            return await Deal.find({ businessId }).sort({ validUntil: 1 });
+        },
+        getReviewsByBusiness: async (_, { businessId }) => {
+            return await Review.find({ businessId }).populate('author').sort({ createdAt: -1 });
+        },
+        getBusinessProfile: async (_, { id }) => {
+            // Try to fetch the business profile by ID
+            const businessProfile = await BusinessProfile.findById(id)
+                .populate('author') // If you want to include the author details, populate the author field.
+                .populate('deals') // If you want to include the deals associated with the business
+                .populate('reviews'); // If you want to include reviews associated with the business
+
+            if (!businessProfile) {
+                throw new Error('Business profile not found');
+            }
+            return businessProfile;
+        },
     },
 
-    getBusinessById: async (_, { id }) => {
-      return await BusinessProfile.findById(id);
-    },
+    Mutation: {
+        createBusinessProfile: async (_, { author, name, description, category, address }) => {
+            // Check if the user has the 'business_owner' role
+            const hasPermission = await checkUserRole(author, ['business_owner', 'resident', 'community_organizer']);
+            console.log(`Checking role for user ${author}`);
+            console.log(`Permission granted? ${hasPermission}`);
 
-    getDealsByBusiness: async (_, { businessId }) => {
-      return await Deal.find({ business: businessId });
-    },
+            if (!hasPermission) throw new Error('Insufficient permissions to create a business profile.');
 
-    getReviewsByBusiness: async (_, { businessId }) => {
-      return await Review.find({ business: businessId });
-    },
-  },
-
-  Mutation: {
-    createBusinessProfile: async (_, { ownerId, name, description, category, contactInfo }) => {
-      const business = new BusinessProfile({
-        owner: { id: ownerId },
-        name,
-        description,
-        category,
-        contactInfo,
-        createdAt: new Date().toISOString(),
-      });
-      return await business.save();
-    },
-
-    createDeal: async (_, { businessId, title, description, validUntil }) => {
-      const deal = new Deal({
-        business: businessId,
-        title,
-        description,
-        validUntil,
-        createdAt: new Date().toISOString(),
-      });
-      return await deal.save();
-    },
-
-    createReview: async (_, { businessId, authorId, rating, comment }) => {
-        try {
-            // First, perform sentiment analysis on the comment
-            const sentiment = await analyzeReviewSentiment(comment).catch(() => {
-                // Fallback to rating-based sentiment analysis if sentiment API fails
-                return getSentimentFromRating(rating);
+            // Create a new business profile and save it
+            const newProfile = new BusinessProfile({
+                author,
+                name,
+                description,
+                category,
+                address,
             });
-    
-            // Create the new review in the database (Mongoose example)
-            const newReview = new Review({
-                businessId,
-                authorId,
-                rating,
-                comment,
-                sentiment,  // Store the sentiment in the review
-                createdAt: new Date(),
-            });
-    
-            // Save the review
-            await newReview.save();
-    
-            return newReview;
-        } catch (error) {
-            console.error("Error creating review:", error);
-            throw new Error("Failed to create review.");
-        }
-    },
+            return await newProfile.save();
+        },
 
-    respondToReview: async (_, { reviewId, response }) => {
-      const review = await Review.findById(reviewId);
-      if (!review) throw new Error("Review not found");
+        createDeal: async (_, { businessId, title, description, validUntil }) => {
+            // Fetch the business profile
+            const business = await BusinessProfile.findById(businessId);
+            if (!business) throw new Error('Business not found');
 
-      review.response = response;
-      return await review.save();
-    },
+            // Check permission based on the business profile's author
+            const hasPermission = await checkUserRole(business.author, ['business_owner']);
+            if (!hasPermission) throw new Error('Insufficient permissions to create a deal.');
+
+            // Create and save the deal
+            const newDeal = new Deal({ businessId, title, description, validUntil });
+            return await newDeal.save();
+        },
+
+        createReview: async (_, { businessId, author, comment, rating }) => {
+            const hasPermission = await checkUserRole(author, ['resident', 'community_organizer']);
+            if (!hasPermission) throw new Error('Only customers can leave reviews.');
+
+            try {
+                const business = await BusinessProfile.findById(businessId);
+                if (!business) throw new Error('Business not found');
+
+                const sentiment = await analyzeReviewSentiment(comment);
+
+                const newReview = new Review({
+                    businessId,  // ✅ correct key name
+                    author,
+                    comment,
+                    rating,
+                    sentiment,
+                });
+
+                await newReview.save();
+
+                // Optionally save business if you later want to push review IDs
+                business.reviews.push(newReview._id);
+                await business.save();
+
+                return await newReview.populate('author');
+            } catch (error) {
+                console.error('Error creating review:', error);
+                throw new Error('Failed to create review');
+            }
+        },
+
+        addResponseToReview: async (_, { reviewId, response, author }) => {
+            const hasPermission = await checkUserRole(author, ['business_owner']);
+            if (!hasPermission) throw new Error('Only business owners can respond to reviews.');
+
+            const review = await Review.findById(reviewId);
+            if (!review) throw new Error('Review not found');
+
+            review.response = response;
+            return await review.save();
+        },
+
+        removeDeal: async (_, { dealId }) => {
+            try {
+                // Attempt to delete the deal by its ID
+                const deletedDeal = await Deal.findByIdAndDelete(dealId);
+
+                // If the deal was deleted, return true
+                if (deletedDeal) {
+                    return true;
+                } else {
+                    return false; // Return false if no deal was found to delete
+                }
+            } catch (error) {
+                console.error("Error deleting deal:", error);
+                return false; // Return false in case of an error
+            }
+        },
+      
   },
 
-  BusinessProfile: {
-    __resolveReference: async (reference) => {
-      return await BusinessProfile.findById(reference.id);
+BusinessProfile: {
+    deals: async (parent) => {
+        return await Deal.find({ businessId: parent._id });
     },
+        reviews: async (parent) => {
+            return await Review.find({ businessId: parent._id }).populate('author');
+        },
   },
 
-  Review: {
-    __resolveReference: async (reference) => {
-      return await Review.findById(reference.id);
+Review: {
+    author: async (parent) => {
+        return await User.findById(parent.author);
     },
   },
 };
-
-// Optional sentiment helper
-function getSentimentFromRating(rating) {
-  if (rating >= 4) return "Positive";
-  if (rating === 3) return "Neutral";
-  return "Negative";
-}
-
 
 export default businessResolver;

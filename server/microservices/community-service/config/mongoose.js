@@ -1,7 +1,7 @@
 //server/microservices/auth-service/config/mongoose.js
 import mongoose from 'mongoose';
 import { config } from './config.js'; // Use default import
-import createUser from '../scripts/discussionScript.js'
+import runSeeder from '../scripts/seed.js'
 
 //
 const connectDB = async () => {
@@ -15,7 +15,7 @@ const connectDB = async () => {
         console.error('❌ Error connecting to MongoDB (Auth Service):', error.message);
         process.exit(1);
     } finally{
-        createUser();
+        runSeeder();
     }
 };
 //

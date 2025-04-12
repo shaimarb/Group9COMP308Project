@@ -1,165 +1,119 @@
+
 import React, { useState } from 'react';
-import { useMutation, gql } from '@apollo/client';
-import {
-  Box,
-  Button,
-  TextField,
-  Typography,
-  Grid,
-  Alert,
-  CircularProgress,
-} from '@mui/material';
+import { useMutation } from '@apollo/client';
+import { gql } from 'graphql-tag';
+import { TextField, Button, Container, Grid, Typography } from '@mui/material';
+import Alert from '@mui/material/Alert';
 
 const CREATE_BUSINESS_PROFILE = gql`
-  mutation CreateBusinessProfile(
-    $ownerId: ID!
-    $name: String!
-    $description: String
-    $category: String
-    $contactInfo: ContactInfoInput
+  mutation createBusinessProfile(
+    $name: String!, 
+    $description: String!, 
+    $category: String!, 
+    $address: String!, 
+    $author: ID!
   ) {
     createBusinessProfile(
-      ownerId: $ownerId
-      name: $name
-      description: $description
-      category: $category
-      contactInfo: $contactInfo
+      name: $name,
+      description: $description,
+      category: $category,
+      address: $address,
+      author: $author
     ) {
       id
       name
       description
       category
-      contactInfo {
-        phone
-        email
-        address
-      }
+      address
       createdAt
     }
   }
 `;
 
-const CreateBusinessProfile = ({ ownerId }) => {
-  const [form, setForm] = useState({
-    name: '',
-    description: '',
-    category: '',
-    phone: '',
-    email: '',
-    address: '',
-  });
-
-  const [createBusinessProfile, { data, loading, error }] = useMutation(CREATE_BUSINESS_PROFILE);
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+const CreateBusinessProfile = ({ userId }) => {
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState('');
+  const [address, setAddress] = useState('');
+  const [author, setAuthor] = useState('');  // Use a valid user ID here
+  const [errorMessage, setErrorMessage] = useState('');
+  const [createBusinessProfile, { loading, data, error }] = useMutation(CREATE_BUSINESS_PROFILE);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if(!name || !description || !category || !address || !userId) {
+      setErrorMessage("All fields are required.");
+      return;
+    }
+
     try {
-      await createBusinessProfile({
-        variables: {
-          ownerId,
-          name: form.name,
-          description: form.description,
-          category: form.category,
-          contactInfo: {
-            phone: form.phone,
-            email: form.email,
-            address: form.address,
-          },
-        },
+        console.log({author: userId, name: name, description: description, category: category, address: address})
+        const { data } = await createBusinessProfile({
+        variables: { name:name, description:description, category:category, address:address, author: userId }
       });
+      console.log('Business created:', data.createBusinessProfile);
     } catch (err) {
-      console.error(err);
+      setErrorMessage('Error creating business profile. Please try again.');
     }
   };
 
   return (
-    <Box maxWidth="600px" mx="auto" mt={4}>
-      <Typography variant="h5" gutterBottom>
-        Create Business Profile
-      </Typography>
+    <Container maxWidth="sm">
+      <Typography variant="h6" sx={{ mb: 3 }}>Creat a Business Profile</Typography>
+      {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
 
       <form onSubmit={handleSubmit}>
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <TextField
               label="Business Name"
-              name="name"
+              variant="outlined"
               fullWidth
-              required
-              value={form.name}
-              onChange={handleChange}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
           </Grid>
-
+          
           <Grid item xs={12}>
             <TextField
               label="Description"
-              name="description"
+              variant="outlined"
               fullWidth
               multiline
-              rows={3}
-              value={form.description}
-              onChange={handleChange}
+              rows={4}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
             />
           </Grid>
-
+          
           <Grid item xs={12}>
             <TextField
               label="Category"
-              name="category"
+              variant="outlined"
               fullWidth
-              value={form.category}
-              onChange={handleChange}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <Typography variant="subtitle1">Contact Info</Typography>
-          </Grid>
-
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Phone"
-              name="phone"
-              fullWidth
-              value={form.phone}
-              onChange={handleChange}
-            />
-          </Grid>
-
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Email"
-              name="email"
-              type="email"
-              fullWidth
-              value={form.email}
-              onChange={handleChange}
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
             />
           </Grid>
 
           <Grid item xs={12}>
             <TextField
               label="Address"
-              name="address"
+              variant="outlined"
               fullWidth
-              value={form.address}
-              onChange={handleChange}
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
             />
           </Grid>
 
           <Grid item xs={12}>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
+            <Button 
+              variant="contained" 
+              color="primary" 
+              type="submit" 
               fullWidth
               disabled={loading}
-              startIcon={loading ? <CircularProgress size={20} /> : null}
             >
               {loading ? 'Creating...' : 'Create Profile'}
             </Button>
@@ -167,20 +121,13 @@ const CreateBusinessProfile = ({ ownerId }) => {
         </Grid>
       </form>
 
+      {data && !error && (
+        <Alert severity="success">Business Profile created successfully!</Alert>
+      )}
       {error && (
-        <Box mt={2}>
-          <Alert severity="error">{error.message}</Alert>
-        </Box>
+        <Alert severity="error">Error: {error.message}</Alert>
       )}
-
-      {data && (
-        <Box mt={2}>
-          <Alert severity="success">
-            Business "{data.createBusinessProfile.name}" created successfully!
-          </Alert>
-        </Box>
-      )}
-    </Box>
+    </Container>
   );
 };
 

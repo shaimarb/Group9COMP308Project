@@ -30,6 +30,15 @@ type HelpRequest {
   createdAt: String!
 }
 
+type EmergencyAlert {
+  id: ID!
+  type: String!
+  description: String!
+  location: String!
+  reportedAt: String!
+  reporterId: ID!
+}
+
 type AIResponse {
     text: String!
     suggestedQuestions: [String]!
@@ -40,23 +49,18 @@ type AIResponse {
 
 type BusinessProfile {
   id: ID!
-  owner: User! @external
   name: String!
   description: String
   category: String
-  contactInfo: ContactInfo
-  createdAt: String!
-}
-
-type ContactInfo {
-  phone: String
-  email: String
   address: String
+  author: User! @external
+  createdAt: String!
+  deals: [Deal!]!
+  reviews: [Review!]!
 }
 
 type Deal {
   id: ID!
-  business: BusinessProfile!
   title: String!
   description: String
   validUntil: String
@@ -65,7 +69,6 @@ type Deal {
 
 type Review {
   id: ID!
-  business: BusinessProfile!
   author: User! @external
   rating: Int!
   comment: String
@@ -74,6 +77,7 @@ type Review {
   createdAt: String!
 }
 
+
 # Queries
 type Query {
   getCommunityPosts: [CommunityPost!]!
@@ -81,12 +85,16 @@ type Query {
   communityAIQuery(input: String!, userId: ID!): AIResponse!
   getDiscussionById(postId: ID!) : CommunityPost
 
+  getEmergencyAlerts: [EmergencyAlert!]!
+
 # BUSINESS QUERIES
 
-  getAllBusinesses: [BusinessProfile!]!
-  getBusinessById(id: ID!): BusinessProfile
-  getDealsByBusiness(businessId: ID!): [Deal!]!
+  getAllBusinessProfiles: [BusinessProfile!]!
   getReviewsByBusiness(businessId: ID!): [Review!]!
+  getDealsByBusiness(businessId: ID!): [Deal!]!
+  getBusinessProfilesByAuthor(authorId: ID!): [BusinessProfile!]! # Added query for business owner
+  getBusinessProfile(id: ID!): BusinessProfile
+
 }
 
 # Mutations
@@ -132,15 +140,19 @@ type Mutation {
 
   logout: Boolean
 
+  createEmergencyAlert(input: EmergencyAlertInput!): EmergencyAlert!
+  deleteEmergencyAlert(id: ID!): Boolean
+
   # BUSINESS MUTATIONS:
 
   createBusinessProfile(
-    ownerId: ID!,
-    name: String!,
-    description: String,
-    category: String,
-    contactInfo: ContactInfoInput
-  ): BusinessProfile!
+  name: String!,
+  description: String,
+  category: String,
+  address: String
+  author: ID!  
+): BusinessProfile!
+
 
   createDeal(
     businessId: ID!,
@@ -149,26 +161,29 @@ type Mutation {
     validUntil: String
   ): Deal!
 
+  removeDeal(dealId: ID!): Boolean!
+
   createReview(
     businessId: ID!,
-    authorId: ID!,
+    author: ID!,
     rating: Int!,
-    comment: String
+    comment: String,
+    sentiment: String
   ): Review!
 
-  respondToReview(
+  addResponseToReview(
     reviewId: ID!,
     response: String!
+    author: ID! 
   ): Review!
 }
 
-input ContactInfoInput {
-  phone: String
-  email: String
-  address: String
+input EmergencyAlertInput {
+  type: String!
+  description: String!
+  location: String!
+  reporterId: ID!
 }
-
-
 
 `
 

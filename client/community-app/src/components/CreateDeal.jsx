@@ -1,136 +1,109 @@
 import React, { useState } from 'react';
-import { useMutation, gql } from '@apollo/client';
-import {
-  Box,
-  Button,
-  TextField,
-  Typography,
-  Grid,
-  Alert,
-  CircularProgress,
-} from '@mui/material';
+import { gql, useMutation } from '@apollo/client';
+import { TextField, Button, Box, Typography } from '@mui/material';
+import { format } from 'date-fns';
 
 const CREATE_DEAL = gql`
-  mutation CreateDeal(
-    $businessId: ID!
-    $title: String!
-    $description: String
-    $validUntil: String
-  ) {
-    createDeal(
-      businessId: $businessId
-      title: $title
-      description: $description
-      validUntil: $validUntil
-    ) {
+  mutation CreateDeal($businessId: ID!, $title: String!, $description: String!, $validUntil: String!) {
+    createDeal(businessId: $businessId, title: $title, description: $description, validUntil: $validUntil) {
       id
       title
-      description
       validUntil
-      createdAt
     }
   }
 `;
 
 const CreateDeal = ({ businessId }) => {
-  const [form, setForm] = useState({
-    title: '',
-    description: '',
-    validUntil: '',
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [validUntil, setValidUntil] = useState('');
+
+  const [createDeal, { loading, error }] = useMutation(CREATE_DEAL, {
+    refetchQueries: ['GetBusinessById'], // Refresh business data after deal is added
   });
-
-  const [createDeal, { data, loading, error }] = useMutation(CREATE_DEAL);
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Create a Date object from the validUntil string
+    const validUntilDate = new Date(validUntil);
+
+    // Log the date for debugging purposes
+    console.log("Valid Until Date:", validUntilDate);
+
+    // Check if the date is valid
+    if (isNaN(validUntilDate)) {
+      console.error('Invalid date format');
+      return; // Stop submission if the date is invalid
+    }
+
+    // Convert the validUntil date to an ISO string
+    const validUntilISO = validUntilDate.toISOString();
+    console.log("Valid Until ISO:", validUntilISO);
+
     try {
+      // Call the mutation to create the deal
       await createDeal({
         variables: {
           businessId,
-          title: form.title,
-          description: form.description,
-          validUntil: form.validUntil,
+          title,
+          description,
+          validUntil: validUntilISO,  // Pass the ISO string to backend
         },
       });
+
+      // Clear form after submission
+      setTitle('');
+      setDescription('');
+      setValidUntil('');
     } catch (err) {
-      console.error(err);
+      console.error('Error creating deal:', err);
     }
   };
 
   return (
-    <Box maxWidth="600px" mx="auto" mt={4}>
-      <Typography variant="h5" gutterBottom>
-        Create New Deal
-      </Typography>
+    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
+      <Typography variant="h6" gutterBottom>Create a New Deal</Typography>
 
-      <form onSubmit={handleSubmit}>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <TextField
-              label="Title"
-              name="title"
-              fullWidth
-              required
-              value={form.title}
-              onChange={handleChange}
-            />
-          </Grid>
+      <TextField
+        label="Title"
+        fullWidth
+        required
+        margin="normal"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
 
-          <Grid item xs={12}>
-            <TextField
-              label="Description"
-              name="description"
-              fullWidth
-              multiline
-              rows={3}
-              value={form.description}
-              onChange={handleChange}
-            />
-          </Grid>
+      <TextField
+        label="Description"
+        fullWidth
+        required
+        multiline
+        rows={3}
+        margin="normal"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+      />
 
-          <Grid item xs={12}>
-            <TextField
-              label="Valid Until"
-              name="validUntil"
-              type="date"
-              fullWidth
-              InputLabelProps={{ shrink: true }}
-              value={form.validUntil}
-              onChange={handleChange}
-            />
-          </Grid>
+      <TextField
+        label="Valid Until (YYYY-MM-DD)"
+        fullWidth
+        required
+        type="date"
+        margin="normal"
+        InputLabelProps={{ shrink: true }}
+        value={validUntil}
+        onChange={(e) => setValidUntil(e.target.value)}
+      />
 
-          <Grid item xs={12}>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              fullWidth
-              disabled={loading}
-              startIcon={loading ? <CircularProgress size={20} /> : null}
-            >
-              {loading ? 'Creating...' : 'Create Deal'}
-            </Button>
-          </Grid>
-        </Grid>
-      </form>
+      <Button variant="contained" color="primary" type="submit" disabled={loading}>
+        {loading ? 'Creating...' : 'Create Deal'}
+      </Button>
 
       {error && (
-        <Box mt={2}>
-          <Alert severity="error">{error.message}</Alert>
-        </Box>
-      )}
-
-      {data && (
-        <Box mt={2}>
-          <Alert severity="success">
-            Deal "{data.createDeal.title}" created successfully!
-          </Alert>
-        </Box>
+        <Typography color="error" mt={1}>
+          Error: {error.message}
+        </Typography>
       )}
     </Box>
   );
