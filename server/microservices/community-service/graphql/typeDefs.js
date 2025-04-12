@@ -10,8 +10,6 @@ const typeDefs = `#graphql
     role: String! @external
   }
 
-
-
 type CommunityPost {
   id: ID!
   author: User! @external
@@ -38,6 +36,43 @@ type AIResponse {
     retrievedPosts: [CommunityPost]!
 }
 
+# BUSINESS_OWNER TYPES
+
+type BusinessProfile {
+  id: ID!
+  owner: User! @external
+  name: String!
+  description: String
+  category: String
+  contactInfo: ContactInfo
+  createdAt: String!
+}
+
+type ContactInfo {
+  phone: String
+  email: String
+  address: String
+}
+
+type Deal {
+  id: ID!
+  business: BusinessProfile!
+  title: String!
+  description: String
+  validUntil: String
+  createdAt: String!
+}
+
+type Review {
+  id: ID!
+  business: BusinessProfile!
+  author: User! @external
+  rating: Int!
+  comment: String
+  sentiment: String
+  response: String
+  createdAt: String!
+}
 
 # Queries
 type Query {
@@ -45,10 +80,17 @@ type Query {
   getHelpRequests: [HelpRequest!]!
   communityAIQuery(input: String!, userId: ID!): AIResponse!
   getDiscussionById(postId: ID!) : CommunityPost
+
+# BUSINESS QUERIES
+
+  getAllBusinesses: [BusinessProfile!]!
+  getBusinessById(id: ID!): BusinessProfile
+  getDealsByBusiness(businessId: ID!): [Deal!]!
+  getReviewsByBusiness(businessId: ID!): [Review!]!
 }
 
 # Mutations
-# removed     aiSummary: String from createCommunityPost
+# removed field    aiSummary: String from createCommunityPost
 
 type Mutation {
   createCommunityPost(
@@ -69,7 +111,6 @@ type Mutation {
   
   addVolunteerToHelpRequest(id: ID!, volunteerId: ID!): Boolean
 
-  # New Mutations:
   updateCommunityPost(
     id: ID!,
     title: String,
@@ -90,7 +131,45 @@ type Mutation {
   deleteHelpRequest(id: ID!): Boolean
 
   logout: Boolean
+
+  # BUSINESS MUTATIONS:
+
+  createBusinessProfile(
+    ownerId: ID!,
+    name: String!,
+    description: String,
+    category: String,
+    contactInfo: ContactInfoInput
+  ): BusinessProfile!
+
+  createDeal(
+    businessId: ID!,
+    title: String!,
+    description: String,
+    validUntil: String
+  ): Deal!
+
+  createReview(
+    businessId: ID!,
+    authorId: ID!,
+    rating: Int!,
+    comment: String
+  ): Review!
+
+  respondToReview(
+    reviewId: ID!,
+    response: String!
+  ): Review!
 }
+
+input ContactInfoInput {
+  phone: String
+  email: String
+  address: String
+}
+
+
+
 `
 
 export default typeDefs;

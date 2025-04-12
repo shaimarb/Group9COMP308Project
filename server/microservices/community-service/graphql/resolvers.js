@@ -3,15 +3,18 @@ import HelpRequest from '../models/HelpRequest.js';
 import User from '../models/User.js'; 
 import { getSummary } from './geminiResolver.js';
 import { aiAgentLogic } from './geminiResolver.js';
+import businessResolver from './businessResolver.js'; // Import business resolver
 
 // Helper function to check if the user role is allowed
 const checkUserRole = async (userId, allowedRoles) => {
   try {
     // Fetch user from the database
     const user = await User.findById(userId);
+    console.log(userId)
     console.log(user.role)
     if (!user) {
-      throw new Error('User not found');
+      // throw new Error('User not found');
+      return false;
     }
 
     // Check if the user's role is included in allowedRoles
@@ -24,6 +27,8 @@ const checkUserRole = async (userId, allowedRoles) => {
 
 const resolvers = {
   Query: {
+    ...businessResolver.Query, // Spread business resolver's Query
+
     getCommunityPosts: async () => {
       return await CommunityPost.find().populate('author').sort({ createdAt: -1 });
     },
@@ -57,6 +62,8 @@ const resolvers = {
   },
 
   Mutation: {
+    ...businessResolver.Mutation, // Spread business resolver's Mutation
+
     // createCommunityPost: async (_, { author, title, content, category }) => {
     //   const hasPermission = await checkUserRole(author, ['resident', 'community_organizer']);
     //   if (!hasPermission) throw new Error('Insufficient permissions');
@@ -90,7 +97,6 @@ const resolvers = {
     },
 
     markHelpRequestResolved: async (_, { id }) => {
-      console.log(id)
       const helpRequest = await HelpRequest.findById(id);
       console.log(helpRequest?.isResolved)
       if (!helpRequest) throw new Error('Help request not found!');
@@ -206,6 +212,8 @@ const resolvers = {
       return true;
   },
   },
+  BusinessProfile: businessResolver.BusinessProfile,
+  Review: businessResolver.Review,
 };
 
 export default resolvers;

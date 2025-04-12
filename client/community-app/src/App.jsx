@@ -3,6 +3,8 @@ import { ApolloClient, InMemoryCache, ApolloProvider } from "@apollo/client";
 import CommunityPage from "./pages/CommunityPage";
 import DiscussionPage from "./pages/DiscussionPage";
 import CommunityChatbot from "./components/CommunityChatBot";
+import CreateBusinessProfile from "./components/CreateBusinessProfile";
+import CreateDeal from "./components/CreateDeal";
 // Set up Apollo Client
 const client = new ApolloClient({
   uri: "http://localhost:4002/graphql",
@@ -11,8 +13,10 @@ const client = new ApolloClient({
 });
 
 function App({ role, userId }) {
-  const rolePassed = role || "community_organizer";
-  const userIdPassed = userId || "67d3c8fc6de12c1b9becc489";
+  // const rolePassed = role || "community_organizer";
+  // const userIdPassed = userId || "67d3c8fc6de12c1b9becc489";
+  const rolePassed = role
+  const userIdPassed = userId
 
   console.log("Community app", { userId, role }, { userIdType: typeof userId, roleType: typeof role });
 
@@ -20,7 +24,6 @@ function App({ role, userId }) {
     <ApolloProvider client={client}>
       <Router>
       <CommunityChatbot userId={userIdPassed}/>
-
         <Routes>
           {/* Home Page */}
           <Route
