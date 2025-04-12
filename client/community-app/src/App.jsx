@@ -13,8 +13,10 @@ const client = new ApolloClient({
 });
 
 function App({ role, userId }) {
-  const rolePassed = role || "community_organizer";
-  const userIdPassed = userId || "67d3c8fc6de12c1b9becc489";
+  // const rolePassed = role || "community_organizer";
+  // const userIdPassed = userId || "67d3c8fc6de12c1b9becc489";
+  const rolePassed = role
+  const userIdPassed = userId
 
   console.log("Community app", { userId, role }, { userIdType: typeof userId, roleType: typeof role });
 

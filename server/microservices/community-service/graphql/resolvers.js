@@ -10,9 +10,11 @@ const checkUserRole = async (userId, allowedRoles) => {
   try {
     // Fetch user from the database
     const user = await User.findById(userId);
+    console.log(userId)
     console.log(user.role)
     if (!user) {
-      throw new Error('User not found');
+      // throw new Error('User not found');
+      return false;
     }
 
     // Check if the user's role is included in allowedRoles
@@ -95,7 +97,6 @@ const resolvers = {
     },
 
     markHelpRequestResolved: async (_, { id }) => {
-      console.log(id)
       const helpRequest = await HelpRequest.findById(id);
       console.log(helpRequest?.isResolved)
       if (!helpRequest) throw new Error('Help request not found!');

@@ -17,7 +17,6 @@ mutation Login($username: String!, $password: String!) {
 `;
 
 
-
 const REGISTER_MUTATION = gql`
 mutation Register($username: String!, $email: String!, $password: String!, $role: String!) {
   register(username: $username, email: $email, password: $password, role: $role)
@@ -37,16 +36,20 @@ function UserComponent() {
   useEffect(()=>{
     console.log(userInfo)
   },[userInfo,setUserInfo])
-  const [login] = useMutation(LOGIN_MUTATION, {
-    onCompleted: () => {
-      console.log("Login successful, reloading page...");
-      
-      window.dispatchEvent(new CustomEvent('loginSuccess', {
-        detail: { isLoggedIn: true, userRole: userInfo?.role }
-      }));
-    },
-    onError: (error) => setAuthError(error.message || 'Login failed'),
-  });
+
+
+const [login] = useMutation(LOGIN_MUTATION, {
+  onCompleted: (data) => {
+    console.log("Login successful, reloading page...", data);
+    // Dispatch the custom loginSuccess event if needed.
+    window.dispatchEvent(new CustomEvent("loginSuccess", {
+      detail: { isLoggedIn: true, userRole: data.login.role, userId: data.login.id }
+    }));
+    // Immediately force a reload—this ensures that the UI won’t show the error state.
+    window.location.reload();
+  },
+  onError: (error) => setAuthError(error.message || "Login failed"),
+});
 
   const [register] = useMutation(REGISTER_MUTATION, {
     onCompleted: () => {
@@ -158,3 +161,14 @@ function UserComponent() {
 }
 
 export default UserComponent;
+
+  // const [login] = useMutation(LOGIN_MUTATION, {
+  //   onCompleted: () => {
+  //     console.log("Login successful, reloading page...");
+      
+  //     window.dispatchEvent(new CustomEvent('loginSuccess', {
+  //       detail: { isLoggedIn: true, userRole: userInfo?.role }
+  //     }));
+  //   },
+  //   onError: (error) => setAuthError(error.message || 'Login failed'),
+  // });

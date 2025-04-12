@@ -47,8 +47,8 @@ const CommunityPage = ({ role, userId }) => {
       { name: 'News Feed', component: <NewsFeed userId={userId} /> },
       { name: 'Help Requests', component: <HelpRequestList userId={userId} role={role} /> },
       { name: 'Community Posts', component: <ListCommunityPosts userId={userId} /> },
-      {name: 'Create a Business Profile', component: <CreateBusinessProfile userId={userId}/>},
-      {name: 'Create Deal', component: <CreateDeal userId={userId} /> }
+      { name: 'Create a Business Profile', component: <CreateBusinessProfile userId={userId} />},
+      { name: 'Create Deal', component: <CreateDeal userId={userId} /> }
 
     ],
     community_organizer: [
